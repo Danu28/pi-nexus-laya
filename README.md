@@ -8,10 +8,22 @@ Port of ideas from `browser-use/jev-ultrafast` (atomic snapshot) + `laya` (typed
 ## Install
 
 ```bash
+# from GitHub (recommended)
+pi install git:github.com/Danu28/pi-nexus-laya
+
+# verify
+pi packages:list
+pi tools:list  # nexus_launch, nexus_snapshot, nexus_act, nexus_text
+```
+
+Or try without installing:
+
+```bash
+# if you cloned pi-nexus-laya standalone
+pi --extension ./index.ts
+
+# from this experiment repo
 pi --extension ./extensions/nexus-laya/index.ts
-# or
-pi install git:github.com/you/pi-nexus-laya
-pi tools:list # nexus_launch, nexus_snapshot, nexus_act, nexus_text
 ```
 
 ## Tools (4 minimal)
