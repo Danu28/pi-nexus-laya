@@ -1,0 +1,22 @@
+{
+  "name": "pi-nexus-laya",
+  "version": "0.1.0",
+  "description": "Unified Laya-inspired extension for pi - context/harness/loop/prompt/graph in 4 tools (launch/snapshot/act/text) - 2-4 calls",
+  "type": "module",
+  "keywords": ["pi", "pi-extension", "laya", "context-engineering", "harness"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Danu28/pi-nexus-laya"
+  },
+  "pi": {
+    "extensions": ["./index.ts"]
+  },
+  "scripts": {
+    "check": "tsc --noEmit --skipLibCheck --ignoreConfig ./index.ts ./src/tools.ts ./src/snapshot.ts ./src/format.ts"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "^0.87.0"
+  }
+}
