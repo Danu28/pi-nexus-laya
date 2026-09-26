@@ -1,4 +1,10 @@
 node_modules/
 dist/
+coverage/
 *.log
 .DS_Store
+nul
+*.tsbuildinfo
+.env
+package-lock.json
+

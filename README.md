@@ -49,10 +49,13 @@ nexus_text {blockIndex:3} // nth block
 ## Design
 
 - One atomic `collectSnapshot()` - 5 roots like `snapshot.js` shadow+iframe scan
-- Typed choice via `TypeBox` - must emit `{"id":"e12"}` not free-form
-- Ranked `50k->12k` TF-IDF+heading - same as browser-laya
-- Guards + fingerprint stale -> re-observe without LLM call
-- Dedup + prio `context/prompt first, onscreen first` before 250 cap
+- Typed choice via `TypeBox` - must emit `{"id":"e12"}` not free-form (batch 1..5, `maxItems:5`)
+- Ranked `100k->12k` TF-IDF+heading - same as browser-laya (hash via `sha256` fingerprint, not `slice(0,64)`)
+- Guards + `sha256` fingerprint stale -> re-observe without LLM call + `disabled` check
+- Dedup + prio `context/prompt first, onscreen first` before 250 cap (always-deduped, `MAX_COLLECT` truncates not drops)
+- Session-scoped state keyed by `sessionId` (not global singleton) - `session_shutdown` clears per-session
+- Live wiring: `sessionManager.getBranch()` / `getSystemPrompt()` / `getAllTools()` (not synthetic `AGENTS.md` only)
+- Abort-aware: all gathers check `signal.aborted` + input validation (`query ≤500`, `limit 1..50000`, `blockIndex ≥1`)
 
 ## Laya Mapping
 
@@ -65,3 +68,14 @@ nexus_text {blockIndex:3} // nth block
 | Hooks | `before_agent_start / agent_before_settle / session_shutdown` |
 
 Not affiliated with `laya` - pattern only.
+
+## Development
+
+```bash
+npm install
+npm run check     # tsc --noEmit
+npm test          # vitest 27 tests (snapshot rank, fingerprint, dedup, tools 5-arg, abort, session-scoped)
+npm run check:all # check + test
+```
+
+Tests cover: `hashFingerprint` determinism & collision-free, `collectSnapshot` 12k/raw split, query-ranking, dedup, 250 cap, `MAX_COLLECT` trunc, `nexus_launch/snapshot/act/text` 5-arg signatures, abort, session isolation, `wait` id, blockIndex validation.

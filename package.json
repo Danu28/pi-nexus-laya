@@ -3,20 +3,38 @@
   "version": "0.1.0",
   "description": "Unified Laya-inspired extension for pi - context/harness/loop/prompt/graph in 4 tools (launch/snapshot/act/text) - 2-4 calls",
   "type": "module",
-  "keywords": ["pi", "pi-extension", "laya", "context-engineering", "harness"],
+  "keywords": [
+    "pi",
+    "pi-extension",
+    "laya",
+    "context-engineering",
+    "harness"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/Danu28/pi-nexus-laya"
   },
   "pi": {
-    "extensions": ["./index.ts"]
+    "extensions": [
+      "./index.ts"
+    ]
   },
   "scripts": {
-    "check": "tsc --noEmit --skipLibCheck --ignoreConfig ./index.ts ./src/tools.ts ./src/snapshot.ts ./src/format.ts"
+    "check": "tsc --noEmit --skipLibCheck ./index.ts ./src/tools.ts ./src/snapshot.ts ./src/format.ts",
+    "test": "vitest run --reporter verbose",
+    "test:coverage": "vitest run --coverage",
+    "check:all": "npm run check && npm test"
   },
-  "dependencies": {},
+  "devDependencies": {
+    "@earendil-works/pi-agent-core": "^0.87.1",
+    "@earendil-works/pi-ai": "^0.87.1",
+    "@earendil-works/pi-coding-agent": "^0.87.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "^0.87.0"
-  }
+  },
+  "dependencies": {}
 }

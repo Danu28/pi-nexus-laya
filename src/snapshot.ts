@@ -26,6 +26,7 @@ export interface NexusSnapshot {
   url: string; // cwd
   title: string;
   text: string; // ranked 12k
+  rawText: string; // full raw up to MAX_COLLECT (100k) for pagination
   fullTextLength: number;
   ranked: boolean;
   relevanceQuery: string;
@@ -39,9 +40,16 @@ export interface NexusSnapshot {
   stats: { context: number; prompt: number; harness: number; loop: number; graph: number };
 }
 
+import { createHash } from "node:crypto";
+
 // --- ranking: same as browser-laya ---
 const MAX_TEXT = 12000;
 const MAX_COLLECT = 100000;
+
+export function hashFingerprint(marker: unknown): string {
+  const json = JSON.stringify(marker);
+  return createHash("sha256").update(json).digest("hex").slice(0, 16);
+}
 
 function rankText(fullTextRaw: string, relevanceQuery: string): { text: string; ranked: boolean } {
   if (fullTextRaw.length <= MAX_TEXT) return { text: fullTextRaw.slice(0, MAX_TEXT), ranked: false };
@@ -148,6 +156,12 @@ export function collectSnapshot(input: CollectInput): NexusSnapshot {
 
   const pushText = (s: string) => {
     if (length >= MAX_COLLECT) return;
+    // truncate instead of dropping when next block would overflow
+    const remaining = MAX_COLLECT - length;
+    if (s.length > remaining) {
+      s = s.slice(0, remaining);
+      if (s.length === 0) return;
+    }
     words.push(s);
     length += s.length;
   };
@@ -224,7 +238,7 @@ export function collectSnapshot(input: CollectInput): NexusSnapshot {
     return a.y - b.y;
   });
 
-  // dedup like browser-laya
+  // dedup like browser-laya - always use deduped list
   const seen = new Map<string, number>();
   const deduped: NexusAction[] = [];
   let dedupedSkipped = 0;
@@ -235,7 +249,7 @@ export function collectSnapshot(input: CollectInput): NexusSnapshot {
     seen.set(key, c + 1);
     deduped.push(a);
   }
-  const finalActions = dedupedSkipped ? deduped : actions;
+  const finalActions = deduped;
   const omitted = Math.max(0, finalActions.length - 250);
   finalActions.splice(250);
   finalActions.forEach((a, i) => (a.id = `e${i + 1}`));
@@ -247,12 +261,13 @@ export function collectSnapshot(input: CollectInput): NexusSnapshot {
   }
 
   const marker = [input.cwd, text.slice(0, 200), finalActions.map(({ id, ...rest }) => rest), input.loopState.iteration];
-  const fingerprint = JSON.stringify(marker).slice(0, 64);
+  const fingerprint = hashFingerprint(marker);
 
   return {
     url: input.cwd,
     title: `nexus:${input.cwd}`,
     text,
+    rawText: fullTextRaw,
     fullTextLength: fullTextRaw.length,
     ranked,
     relevanceQuery: input.query || "",
